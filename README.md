@@ -2,7 +2,7 @@
 
 Real-time multiplayer **Tic-Tac-Toe** and **Connect Four**. One player creates a room, shares a 4-letter code, and a friend joins from any browser. Moves sync live over WebSockets.
 
-Live Demo Link: [ ]
+Live Demo Link: [https://playtime-fzuj.onrender.com/]
 
 ## Features
 
@@ -39,7 +39,7 @@ tests/smoke.js     Two-client end-to-end test
 
 ## Deploy
 
-Deployed on Render to live access. (please wait for 20 seconds to load) 
+Deployed on Render to live access. (please wait for seconds to load) 
 
 ## Ideas to extend
 
