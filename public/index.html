@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table for Two: online Tic-Tac-Toe and Connect Four</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #edf1f7;
+    --ink: #14213d;
+    --muted: #5b6784;
+    --panel: #ffffff;
+    --board: #14213d;
+    --cell: #22335c;
+    --p0: #e8505b;   /* first player */
+    --p1: #f2b134;   /* second player */
+    --line: #cfd7e6;
+    --font: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink);
+    font-family: var(--font); display: grid; place-items: center; padding: 20px;
+  }
+  main { width: 100%; max-width: 460px; }
+  h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .panel { background: var(--panel); border-radius: 14px; padding: 22px; border: 1px solid var(--line); }
+  label { display: block; font-weight: 600; margin: 0 0 6px; }
+  input[type=text] {
+    width: 100%; font: inherit; padding: 12px 14px; border-radius: 10px;
+    border: 1.5px solid var(--line); background: #fff; color: var(--ink);
+  }
+  input[type=text]:focus-visible, button:focus-visible { outline: 3px solid var(--p1); outline-offset: 2px; }
+  .field { margin-bottom: 18px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg button {
+    font: inherit; font-weight: 600; padding: 12px; border-radius: 10px; cursor: pointer;
+    border: 1.5px solid var(--line); background: #fff; color: var(--ink);
+  }
+  .seg button[aria-pressed=true] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn {
+    font: inherit; font-weight: 700; padding: 13px 18px; border-radius: 10px; border: 0;
+    background: var(--p0); color: #fff; cursor: pointer; width: 100%;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); width: auto; padding: 8px 14px; font-weight: 600; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .join { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px; }
+  .join .btn { width: auto; background: var(--ink); }
+  input.code { text-transform: uppercase; letter-spacing: .3em; font-weight: 800; text-align: center; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+  .err { color: #b3261e; font-weight: 600; min-height: 1.4em; margin: 12px 0 0; }
+
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; }
+  .roomcode { font: inherit; font-weight: 800; letter-spacing: .3em; font-size: 1.3rem; background: none; border: 0; cursor: pointer; color: var(--ink); padding: 0; }
+  .roomcode small { display: block; letter-spacing: 0; font-weight: 400; font-size: .75rem; color: var(--muted); text-align: left; }
+  .players { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .pl { padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: #fff; display: flex; align-items: center; gap: 10px; font-weight: 600; min-width: 0; }
+  .pl span.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pl.turn { border-color: var(--ink); }
+  .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+  .dot.p0 { background: var(--p0); } .dot.p1 { background: var(--p1); }
+  .status { font-size: 1.25rem; font-weight: 700; margin: 6px 0 14px; min-height: 1.6em; }
+
+  .board { display: grid; gap: 8px; background: var(--board); padding: 12px; border-radius: 14px; }
+  .cell {
+    aspect-ratio: 1; border: 0; border-radius: 10px; background: var(--cell); cursor: pointer;
+    display: grid; place-items: center; padding: 0; font: inherit; font-size: 3rem; font-weight: 800; color: #fff;
+  }
+  .cell:disabled { cursor: default; }
+  .cell.p0 { color: var(--p0); } .cell.p1 { color: var(--p1); }
+  .c4 .cell { border-radius: 50%; background: var(--paper); }
+  .c4 .cell .disc { width: 100%; height: 100%; border-radius: 50%; }
+  .c4 .cell .disc.p0 { background: var(--p0); } .c4 .cell .disc.p1 { background: var(--p1); }
+  .c4 { gap: 6px; padding: 10px; }
+  .cell.win { outline: 4px solid #fff; outline-offset: -4px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .cell.win { animation: pulse .9s ease-in-out infinite alternate; }
+    @keyframes pulse { to { transform: scale(.92); } }
+  }
+  .actions { margin-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <section id="lobby">
+    <h1>Game Tic-Tac-Toe!..</h1>
+    <p class="sub">Play Tic-Tac-Toe or Connect Four with a friend, live.</p>
+    <div class="panel">
+      <div class="field">
+        <label for="name">Your name</label>
+        <input id="name" type="text" maxlength="16" placeholder="e.g. Sunil" autocomplete="off">
+      </div>
+      <div class="field">
+        <label id="gl">Pick a game</label>
+        <div class="seg" role="group" aria-labelledby="gl">
+          <button type="button" data-game="tictactoe" aria-pressed="true">Tic-Tac-Toe</button>
+          <button type="button" data-game="connect4" aria-pressed="false">Connect Four Series</button>
+        </div>
+      </div>
+      <button class="btn" id="create">Create room</button>
+      <hr>
+      <label for="code">Have a code? Join with a friend</label>
+      <div class="join">
+        <input id="code" class="code" type="text" maxlength="4" placeholder="ABCD" autocomplete="off">
+        <button class="btn" id="join">Join room</button>
+      </div>
+      <p class="err" id="err" role="alert"></p>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div class="top">
+      <button class="roomcode" id="copy" title="Copy room code"><small>Room code (tap to copy)</small><span id="roomcode">----</span></button>
+      <button class="btn ghost" id="leave">Leave</button>
+    </div>
+    <div class="players">
+      <div class="pl" id="pl0"><span class="dot p0"></span><span class="name"></span></div>
+      <div class="pl" id="pl1"><span class="dot p1"></span><span class="name"></span></div>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <div class="board" id="board"></div>
+    <div class="actions"><button class="btn" id="rematch" hidden>Play again</button></div>
+  </section>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const $ = (s) => document.querySelector(s);
+  let state = null;
+  let game = 'tictactoe';
+
+  try { $('#name').value = localStorage.getItem('tft-name') || ''; } catch (_) {}
+
+  document.querySelectorAll('[data-game]').forEach((b) => {
+    b.addEventListener('click', () => {
+      game = b.dataset.game;
+      document.querySelectorAll('[data-game]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    });
+  });
+
+  function nameValue() {
+    const n = $('#name').value.trim();
+    try { localStorage.setItem('tft-name', n); } catch (_) {}
+    return n;
+  }
+  function showError(msg) { $('#err').textContent = msg || ''; }
+  function handle(res) { if (!res.ok) showError(res.error); }
+
+  $('#create').addEventListener('click', () => {
+    showError('');
+    socket.emit('createRoom', { name: nameValue(), game }, handle);
+  });
+  $('#join').addEventListener('click', () => {
+    showError('');
+    const code = $('#code').value.trim();
+    if (code.length !== 4) return showError('Enter the 4-letter room code.');
+    socket.emit('joinRoom', { name: nameValue(), code }, handle);
+  });
+  $('#code').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#join').click(); });
+  $('#leave').addEventListener('click', () => { socket.disconnect(); location.reload(); });
+  $('#rematch').addEventListener('click', () => socket.emit('rematch'));
+  $('#copy').addEventListener('click', () => {
+    if (state && navigator.clipboard) navigator.clipboard.writeText(state.code);
+  });
+
+  socket.on('state', (s) => { state = s; render(); });
+  socket.on('disconnect', () => {
+    if (state) $('#status').textContent = 'Connection lost. Reload the page to start again.';
+  });
+
+  function statusText(s) {
+    const opp = s.players[1 - s.you] || 'Your opponent';
+    switch (s.status) {
+      case 'waiting': return 'Waiting for a friend. Share the room code.';
+      case 'playing': return s.turn === s.you ? 'Your move' : `${opp}'s move`;
+      case 'won': return s.winner === s.you ? 'You win!' : `${s.players[s.winner] || opp} wins`;
+      case 'draw': return "It's a draw";
+      case 'abandoned': return 'Your opponent left the room. Tap Leave to start a new one.';
+    }
+    return '';
+  }
+
+  function render() {
+    $('#lobby').hidden = true;
+    $('#game').hidden = false;
+    $('#roomcode').textContent = state.code;
+
+    [0, 1].forEach((i) => {
+      const el = $('#pl' + i);
+      // After an opponent leaves, only one name remains in the list.
+      const name = state.status === 'abandoned' ? (i === state.you ? state.players[state.you] : '') : state.players[i];
+      el.querySelector('.name').textContent = (name || 'Waiting...') + (i === state.you && name ? ' (you)' : '');
+      el.classList.toggle('turn', state.status === 'playing' && state.turn === i);
+    });
+
+    $('#status').textContent = statusText(state);
+
+    const board = $('#board');
+    board.className = 'board' + (state.game === 'connect4' ? ' c4' : '');
+    board.style.gridTemplateColumns = `repeat(${state.cols}, 1fr)`;
+    board.style.maxWidth = state.game === 'connect4' ? '460px' : '340px';
+    board.style.margin = '0 auto';
+    board.innerHTML = '';
+
+    const myTurn = state.status === 'playing' && state.turn === state.you;
+    state.board.forEach((v, i) => {
+      const cell = document.createElement('button');
+      cell.className = 'cell' + (v !== null ? ' p' + v : '') + (state.line.includes(i) ? ' win' : '');
+      cell.disabled = !myTurn;
+      if (state.game === 'connect4') {
+        cell.setAttribute('aria-label', `Column ${(i % state.cols) + 1}`);
+        if (v !== null) { const d = document.createElement('span'); d.className = 'disc p' + v; cell.appendChild(d); }
+        cell.addEventListener('click', () => socket.emit('move', { col: i % state.cols }));
+      } else {
+        cell.setAttribute('aria-label', `Square ${i + 1}`);
+        cell.textContent = v === null ? '' : v === 0 ? 'X' : 'O';
+        cell.disabled = !myTurn || v !== null;
+        cell.addEventListener('click', () => socket.emit('move', { cell: i }));
+      }
+      board.appendChild(cell);
+    });
+
+    const over = state.status === 'won' || state.status === 'draw';
+    const rm = $('#rematch');
+    rm.hidden = !over;
+    const voted = state.rematch.includes(state.you);
+    rm.disabled = voted;
+    rm.textContent = voted ? 'Waiting for opponent...' : 'Play again';
+  }
+</script>
+</body>
+</html>
