@@ -2,6 +2,8 @@
 
 Real-time multiplayer **Tic-Tac-Toe** and **Connect Four**. One player creates a room, shares a 4-letter code, and a friend joins from any browser. Moves sync live over WebSockets.
 
+Live Demo Link: [ ]
+
 ## Features
 
 - Room codes: create a room or join one with a code
@@ -15,21 +17,6 @@ Real-time multiplayer **Tic-Tac-Toe** and **Connect Four**. One player creates a
 ## Tech stack
 
 Node.js, Express, Socket.IO, vanilla HTML/CSS/JS
-
-## Run locally
-
-```bash
-npm install
-npm start
-```
-
-Open http://localhost:3000 in two browser tabs. Create a room in one tab and join with the code in the other.
-
-Run the tests:
-
-```bash
-npm test
-```
 
 ## How it works
 
@@ -52,7 +39,7 @@ tests/smoke.js     Two-client end-to-end test
 
 ## Deploy
 
-Works on Render, Railway or Fly.io. Use `npm install` as the build command and `npm start` as the start command. The platform sets `PORT` automatically.
+Deployed on Render to live access. (please wait for 20 seconds to load) 
 
 ## Ideas to extend
 
